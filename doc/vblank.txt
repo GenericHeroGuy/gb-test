@@ -1,0 +1,12 @@
+HOW TO UPLOAD STUFF TO VRAM
+
+Length is implicitly defined by the upload routine address
+
+1. Reset "vram upload" flag in vblankOptions
+2. Grab a pointer to uploadAddr
+3. Push target (VRAM) address
+4. Push upload routine address (check macros.inc)
+5. Push a zero byte (LD (HL), 0)
+6. Grab a pointer to uploadData
+7. Write all your bits and bytes
+8. Set "vram upload" flag in vblankOptions
