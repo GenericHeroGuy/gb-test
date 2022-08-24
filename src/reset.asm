@@ -145,8 +145,6 @@ SgbPatches:
 
 	CALL SgbDetectHle
 
-	LD HL, Sgb_SouTrnPatch
-
 ResetApu:
 	LD A, APUSTAT.ON
 	LDH (<APUSTAT), A
