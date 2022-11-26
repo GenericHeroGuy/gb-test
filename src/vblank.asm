@@ -1,90 +1,90 @@
-.include "memmap.inc"
-.include "gameboy.inc"
-.include "macros.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "gameboy.inc"
+.INCLUDE "macros.inc"
 
-.bank 0 slot 0
-.org 0
+.BANK 0 SLOT 0
+.ORG 0
 
-.section "Vblank" 
-
-;A = data to fill
-VblankUploadFill:
-	.rept 400
-		LD (HL+), A
-	.endr
-	INC DE	;next data byte
-	JP Vblank_VramUpload
+.SECTION "Vblank"
 
 ;the LD A, (DE) always comes first so the first load can be skipped (see Vblank_VramUpload)
+
+VblankUploadFill:
+	.REPT 400
+		ld (hl+), a
+	.ENDR
+	inc de
+	jp Vblank_VramUpload
+
 VblankUploadDotted:
-	.rept 32
-		LD A, (DE)
-		POP HL
-		LD (HL), A
-		INC DE
-	.endr
-	JP Vblank_VramUpload
+	.REPT 32
+		ld a, (de)
+		pop hl
+		ld (hl), a
+		inc de
+	.ENDR
+	jp Vblank_VramUpload
 
 /*
 VblankUploadColumn:
-	.rept 32
-		LD A, (DE)
-		LD (HL+), A
-		INC DE
-		ADD HL, BC
-	.endr
-	JR Vblank_VramUpload
+	.REPT 32
+		ld a, (de)
+		ld (hl+), a
+		inc de
+		add hl, bc
+	.ENDR
+	jr Vblank_VramUpload
 */
 
 VblankUploadNormal:
-	.rept 32
-		LD A, (DE)
-		LD (HL+), A
-		INC DE
-	.endr
-	JR Vblank_VramUpload
+	.REPT 32
+		ld a, (de)
+		ld (hl+), a
+		inc de
+	.ENDR
+	jr Vblank_VramUpload
 
 
 Vblank:
-	PUSH AF
-	PUSH BC
-	PUSH DE
-	PUSH HL
+	push af
+	push bc
+	push de
+	push hl
 
 Vblank_VramUploadStart:
-	LD (spSave), SP
-	LD SP, uploadAddr	;pointer to upload addresses
-	LD DE, uploadData	;pointer to upload data
-	LD BC, 32	;added to HL when writing columns of tiles
+	ld (wSpSave), sp
+	ld sp, wUploadAddr ;pointer to upload addresses
+	ld de, wUploadData ;pointer to upload data
+	ld bc, 32          ;added to HL when writing columns of tiles
 
 Vblank_VramUpload:
-	POP HL ;target address
-	LD A, (DE)	;load first data byte
-	BIT 7, H	;exit if bit 15 of address is zero
-	RET NZ	;otherwise, fetch and jump to upload routine
+	pop hl     ;pop target address
+	ld a, (de) ;load first data byte
+	bit 7, h   ;if bit 15 of address is zero,
+	ret nz     ;exit. otherwise, fetch and jump to upload routine
 
 Vblank_VramUploadEnd:
-	LD HL, spSave	;reload stack pointer
+	ld hl, wSpSave ;reload stack pointer
 	GetPointerToHL
-	LD SP, HL
+	ld sp, hl
 
 Vblank_OamUpload:
-	LD A, >spriteBuffer
-	LD BC, $28 << 8 | <DMA
-	CALL oamUpload
+	ld a, >wSpriteBuffer
+	ld bc, $28 << 8 | <rDMA
+	call hOamUpload
 
-	LD HL, vblankCount
-	INC (HL)
-	INC HL	;LD HL, frameCount
-	INC (HL)
+	ld hl, hVblankCount
+	inc (hl)
+	inc hl ;LD HL, hFrameCount
+	inc (hl)
 
-	EI
-	CALL AudioEntry
+	ei
+	call AudioEntry
 
-	POP HL
-	POP DE
-	POP BC
-	POP AF
-	RETI
+	pop hl
+	pop de
+	pop bc
+	pop af
+	reti
 	
-.ends
+.ENDS

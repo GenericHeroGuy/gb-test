@@ -1,118 +1,116 @@
-.include "memmap.inc"
-.include "gameboy.inc"
-.include "enums.inc"
-.include "macros.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "gameboy.inc"
+.INCLUDE "enums.inc"
+.INCLUDE "macros.inc"
 
-.bank 0 slot 0
-.org 0
+.BANK 0 SLOT 0
+.ORG 0
 
-.section "Main"
+.SECTION "Main"
 
 Main:
-;upload test
-	LD HL, uploadAddr
-	LD A, $10
-	LD (HL+), A
-	LD A, $90
-	LD (HL+), A
-	LD A, <VblankUploadFill
-	LD (HL+), A
-	LD A, >VblankUploadFill
-	LD (HL+), A
-;cut here
+	;upload test
+	ld hl, wUploadAddr
+	ld a, $10
+	ld (hl+), a
+	ld a, $90
+	ld (hl+), a
+	ld a, <VblankUploadFill
+	ld (hl+), a
+	ld a, >VblankUploadFill
+	ld (hl+), a
+	;cut here
 
-;farcall test
+	;farcall test
 	FarCall FarCallTest
-;cut here
+	;cut here
 
-	LD A, %11100100
-	LDH (<BGP), A
-	LDH (<OBP0), A
+	ld a, %11100100
+	ldh (<rBGP), a
+	ldh (<rOBP0), a
 
 WriteCharset:
-	LD HL, $8800
-	LD DE, CHR_CHARSET
-	LD BC, CHR_CHARSET_size
-	CALL MemCpy
+	ld hl, $8800
+	ld de, CHR_CHARSET
+	ld bc, CHR_CHARSET_size
+	call MemCpy
 
 WriteMessage1:
-	LD HL, $9962
-	LD DE, Message1
-
-	CALL MemCpyNull
+	ld hl, $9962
+	ld de, Message1
+	call MemCpyNull
 
 WriteMessage2:
-	LD HL, $9982
-	LD DE, Message2
-
-	CALL MemCpyNull
+	ld hl, $9982
+	ld de, Message2
+	call MemCpyNull
 
 End:
-	LD A, LCDC_DEFAULT
-	LDH (<LCDC), A
+	ld a, LCDC_DEFAULT
+	ldh (<rLCDC), a
 
-	XOR A
-	LDH (<IF), A	;acknowledge all interrupts
-	LD A, IE.VBLANK
-	LDH (<IE), A
+	xor a
+	ldh (<rIF), a ;acknowledge all interrupts
+	ld a, IE.VBLANK
+	ldh (<rIE), a
 
-	LD A, Player.ID
-	LD BC, 0
-	LD DE, 0
-	CALL AddActor
+	ld a, Player.ID
+	ld bc, 0
+	ld de, 0
+	call AddActor
 
 Forever:
-	LD HL, uploadData
-	INC (HL)
-	CALL ReadInput
-	CALL ClearSprites
-	CALL Player
-	CALL WaitVblank
+	ld hl, wUploadData
+	inc (hl)
+	call ReadInput
+	call ClearSprites
+	call Player
+	call WaitVblank
 
-	JR Forever
+	jr Forever
 
 WaitVblank:
-	HALT
-	NOP
+	halt
+	nop
 
-	LDH A, (<vblankCount)
-	OR A
-	JR Z, WaitVblank	;not Vblank? keep waiting
+	ldh a, (<hVblankCount)
+	or a
+	jr z, WaitVblank ;not Vblank? keep waiting
 
-	XOR A
-	LDH (<vblankCount), A
-	RET
+	xor a
+	ldh (<hVblankCount), a
+	ret
 
 Message1:
-	.asc "LOOK MOM, I CAN", 0
+	.ASC "LOOK MOM, I CAN", 0
 
 Message2:
-	.asc "WRITE MESSAGES", 0
+	.ASC "WRITE MESSAGES", 0
 
-.ends
+.ENDS
 
-.bank 2 slot 1
-.org $4000
+.BANK 2 SLOT 1
+.ORG $4000
 
-.section "FarCallTest"
+.SECTION "FarCallTest"
 FarCallTest:
 	FarCall FarCallTest2
-	RET
-.ends
+	ret
+.ENDS
 
-.bank 3 slot 1
-.org $4000
+.BANK 3 SLOT 1
+.ORG $4000
 
-.section "FarCallTest2"
+.SECTION "FarCallTest2"
 FarCallTest2:
-	LD DE, $1234
+	ld de, $1234
 	FarJp FarCallTest3
-.ends
+.ENDS
 
-.bank 1 slot 1
-.org $4000
+.BANK 1 SLOT 1
+.ORG $4000
 
-.section "FarCallTest3"
+.SECTION "FarCallTest3"
 FarCallTest3:
-	RET
-.ends
+	ret
+.ENDS

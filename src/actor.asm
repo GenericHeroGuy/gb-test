@@ -1,67 +1,67 @@
-.include "memmap.inc"
-.include "enums.inc"
-.include "macros.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "enums.inc"
+.INCLUDE "macros.inc"
 
-.bank 0 slot 0
-.org 0
+.BANK 0 SLOT 0
+.ORG 0
 
-.section "Actor"
+.SECTION "Actor"
 
-;A = ID of actor to add
-;BC = argument to actor init code
-;uses	AF BC DE HL
+;input: A = ID of actor to add
+;       BC = argument to actor init code
+;uses:  AF BC DE HL
 AddActor:
-	PUSH AF
-	LD HL, actorData
-	LD DE, _sizeof_ACTOR
+	push af
+	ld hl, wActorData
+	ld de, _sizeof_ACTOR
 
-	.db $FE	;skip first ADD HL, DE. becomes CP A, $09
+	.DB $FE ;skip first ADD HL, DE. becomes CP A, $09
 	_FindActor:
-		ADD HL, DE
-		LD A, (HL)
-		OR A
-		JR NZ, _FindActor
+		add hl, de
+		ld a, (hl)
+	or a
+	jr nz, _FindActor
 
-	POP AF
-	LD (HL), A	;write ID
-	PUSH HL	;save actor's address in RAM
+	pop af
+	ld (hl), a ;write ID
+	push hl    ;save actor's address in RAM
 
-;now get the index into ActorInitPointers...
-	LD L, A
-	LD H, 0
-	ADD HL, HL
-	LD DE, ActorInitPointers
-	ADD HL, DE
+	;now get the index into ActorInitPointers...
+	ld l, a
+	ld h, 0
+	add hl, hl
+	ld de, ActorInitPointers
+	add hl, de
 	GetPointerToDE
 
-	POP HL
+	pop hl
 	PushBank ACTOR_BANK
-	CALL +
+	call +
 	PopBank
-	RET
+	ret
 
-+:	PUSH DE
-	RET
++:	push de
+	ret
 
-;uses	AF BC DE HL
+;uses:	AF BC DE HL
 RunActors:
 	SetBank ACTOR_BANK
-	LD HL, actorData
+	ld hl, wActorData
 
-.ends
+.ENDS
 
-.section "ActorPointers"
+.SECTION "ActorPointers"
 
 ActorPointers:
-	.dw 0
-	.dw Actor_Player
+	.DW 0
+	.DW Actor_Player
 
-.ends
+.ENDS
 
-.section "ActorInitPointers"
+.SECTION "ActorInitPointers"
 
 ActorInitPointers:
-	.dw 0
-	.dw Init_Player
+	.DW 0
+	.DW Init_Player
 
-.ends
+.ENDS

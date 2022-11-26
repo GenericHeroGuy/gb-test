@@ -1,26 +1,28 @@
-.include "memmap.inc"
-.include "gbapu.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "gbapu.inc"
 
-.bank 0 slot 0
-.org 0
+.BANK 0 SLOT 0
+.ORG 0
 
-.section "Audio"
+.SECTION "Audio"
 
 AudioEntry:
-	RET
+	ret
 
+;input: HL = Waveform address
+;uses:  AF BC HL
 SetWaveRam:
-	XOR A
-	LDH (<C3EN), A
-	LD BC, 16 << 8 | <WAVERAM
--:	LD A, (HL+)
-	LDH (C), A
-	INC C
-	DEC B
-	JR NZ, -
-	RET
+	xor a
+	ldh (<rC3EN), a
+	ld bc, 16 << 8 | <rWAVERAM
+-:		ld a, (hl+)
+		ldh (c), a
+		inc c
+	dec b
+	jr nz, -
+	ret
 
 WaveSquare:
-	.db 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255
+	.DB 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255
 
-.ends
+.ENDS

@@ -1,9 +1,9 @@
-.include "memmap.inc"
+.INCLUDE "memmap.inc"
 
-.section CHR
+.SECTION "CHR"
 
 CHR_CHARSET:
-	.incbin "chr/charset.chr" fsize CHR_CHARSET_size
-	.export CHR_CHARSET_size
+	.INCBIN "chr/charset.chr" FSIZE CHR_CHARSET_size
+	.EXPORT CHR_CHARSET_size
 
-.ends
+.ENDS

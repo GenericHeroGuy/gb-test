@@ -1,177 +1,177 @@
-.include "memmap.inc"
-.include "gameboy.inc"
-.include "enums.inc"
-.include "sgb.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "gameboy.inc"
+.INCLUDE "enums.inc"
+.INCLUDE "sgb.inc"
 
-.bank 0 slot 0
-.org 0
+.BANK 0 SLOT 0
+.ORG 0
 
-.section "SGB"
+.SECTION "SGB"
 
+;input: HL = pointer to command
+;uses:  AF BC DE HL
 SgbSendCommand:
-	CALL SgbSendCommandNoDelay
-	LD BC, $0C00	;magic delay value :)
--:		DEC BC
-	LD A, C
-	OR B
-	JR NZ, -
-	RET
+	call SgbSendCommandNoDelay
+	ld bc, $0C00 ;magic delay value :)
+-:		dec bc
+	ld a, c
+	or b
+	jr nz, -
+	ret
 
-;HL = pointer to command
+;input: HL = pointer to command
+;uses:  AF BC DE HL
 SgbSendCommandNoDelay:
-;B = # of bytes to transfer
-;C = P1
-;D = data to transfer
-;E = # of bits to transfer
-	LD B, 16	;number of bytes to transfer
-	LD E, B	;LD E, P1.KEYS
-	XOR A	;LD A, P1.BOTH
-	LD C, A	;LD C, <P1
+	ld b, 16 ;number of bytes to transfer
+	ld e, b  ;LD E, P1.KEYS
+	xor a    ;LD A, P1.BOTH
+	ld c, a  ;LD C, <rP1
 
-	LDH (C), A	;send STOP command (aka start receiving)
-	LD A, P1.NONE
-	LDH (C), A
+	ldh (c), a ;send STOP command (aka start receiving)
+	ld a, P1.NONE
+	ldh (c), a
 
 SgbSendByte:
-	LD A, (HL+)
-	LD D, A		;fetch byte to D
+	ld a, (hl+)
+	ld d, a ;fetch byte to D
 
 SgbSendBit:
-	.rept 8
-		LD A, E	;set bit to transfer to ZERO
-		RRC D	;shift out data bit
-		JR C, +	;if it's ONE,
-		ADD A, A	;shift A left, setting bit to transfer to ONE
+	.REPT 8
+		ld a, e    ;set bit to transfer to ZERO
+		rrc d      ;shift out data bit
+		jr c, +    ;if it's ONE,
+		add a, a   ;shift A left, setting bit to transfer to ONE
 
-	+:	LDH (C), A	;now transfer bit to SGB
-		LD A, P1.NONE
-		LDH (C), A
-	.endr
+	+:	ldh (c), a ;now transfer bit to SGB
+		ld a, P1.NONE
+		ldh (c), a
+	.ENDR
 
-	DEC B	;bytes left to send?
-	JR NZ, SgbSendByte
+	dec b ;bytes left to send?
+	jr nz, SgbSendByte
 
 SgbSendStop:
-	LD A, P1.DPAD	;send stop bit (ONE)
-	LDH (C), A
-	ADD E	;LD A, P1.NONE	;disable joypad
-	LDH (C), A
-	RET
+	ld a, P1.DPAD ;send stop bit (ONE)
+	ldh (c), a
+	add e         ;LD A, P1.NONE (disable joypad)
+	ldh (c), a
+	ret
 
-;BC = size of data
-;DE = pointer to VRAM transfer data
+;input: BC = size of data
+;       DE = pointer to VRAM transfer data
+;uses:  AF BC DE HL
 SgbSendVram:
-;HL = VRAM pointer
-	LD HL, $8000
-	INC B	;haha ugly hack
-	CALL MemCpy
+	ld hl, $8000
+	inc b ;haha ugly hack
+	call MemCpy
 
-;fill tilemap with incrementing tile ID
-	LD HL, $9800
-	LD DE, 12
-	XOR A
-	LD C, 13
---:		LD B, 20
-	-:		LD (HL+), A
-			INC A
-		DEC B
-		JR NZ, -
-	ADD HL, DE
-	DEC C
-	JR NZ, --
-	RET
+	;fill tilemap with incrementing tile ID
+	ld hl, $9800
+	ld de, 12
+	xor a
+	ld c, 13
+--:		ld b, 20
+	-:		ld (hl+), a
+			inc a
+		dec b
+		jr nz, -
+	add hl, de
+	dec c
+	jr nz, --
+	ret
 
-;BC = transfer size
-;DE = pointer to VRAM transfer data
+;input: BC = transfer size
+;       DE = pointer to VRAM transfer data
+;uses:  AF BC DE HL
 SgbTransferMusic:
-	DI
-	PUSH BC	;save for delay
-	PUSH BC
-	PUSH DE
+	di
+	push bc ;save for delay
+	push bc
+	push de
 
-	LD HL, CmdFreezeScreen
-	CALL SgbSendCommand
+	ld hl, CmdFreezeScreen
+	call SgbSendCommand
 
-	POP DE
-	POP BC
+	pop de
+	pop bc
 
-	CALL DisableLcd
-	CALL SgbSendVram	;transfer sound data to VRAM
+	call DisableLcd
+	call SgbSendVram ;transfer sound data to VRAM
 
-	LD A, LCDC_SGBVRAM	;turn on BG, disable sprites, use $8000-8FFF for BG tiles
-	LDH (<LCDC), A
-	LD HL, CmdTransferMusic
-	CALL SgbSendCommandNoDelay
+	ld a, LCDC_SGBVRAM ;turn on BG, disable sprites, use $8000-8FFF for BG tiles
+	ldh (<rLCDC), a
+	ld hl, CmdTransferMusic
+	call SgbSendCommandNoDelay
 
-;custom delay function: transfer size * 16
-	POP BC
-	SWAP B
--:		DEC BC
-	LD A, C
-	OR B
-	JR NZ, -
+	;custom delay function: transfer size * 16
+	pop bc
+	swap b
+-:		dec bc
+	ld a, c
+	or b
+	jr nz, -
 
-	LD A, LCDC_DEFAULT
-	LDH (<LCDC), A
-	LD HL, CmdPlayMusic
-	CALL SgbSendCommand
-	LD HL, CmdUnfreezeScreen
-	CALL SgbSendCommandNoDelay
+	ld a, LCDC_DEFAULT
+	ldh (<rLCDC), a
+	ld hl, CmdPlayMusic
+	call SgbSendCommand
+	ld hl, CmdUnfreezeScreen
+	call SgbSendCommandNoDelay
 
-	XOR A
-	LDH (<IF), A	;acknowledge interrupts
-	RETI
+	xor a
+	ldh (<rIF), a ;acknowledge interrupts
+	reti
 
 SgbDetectHle:
-;upload and run some code on the SNES that manually enables multiplayer mode
-;if it doesn't work, assume it's HLE
-	LD HL, CmdTestHle1
-	CALL SgbSendCommand
-	LD HL, CmdTestHle2
-	CALL SgbSendCommand
-	LD HL, CmdTestHle3
-	CALL SgbSendCommand
+	;upload and run some code on the SNES that manually enables multiplayer mode
+	;if it doesn't work, assume it's HLE
+	ld hl, CmdTestHle1
+	call SgbSendCommand
+	ld hl, CmdTestHle2
+	call SgbSendCommand
+	ld hl, CmdTestHle3
+	call SgbSendCommand
 
-	LD HL, $9800	;address to write message
+	ld hl, $9800 ;address to write message
 
-	LDH A, (<P1)
-	CP $FF
-	LD DE, SgbFailMsg
-	JR NZ, _end	;i hope it's $FF...
+	ldh a, (<rP1)
+	cp $FF
+	ld de, SgbFailMsg
+	jr nz, _end ;i hope it's $FF...
 
-	LD A, P1.KEYS	;(try to) switch to joypad 2
-	LDH (<P1), A
-	LD A, P1.NONE
-	LDH (<P1), A
+	ld a, P1.KEYS ;(try to) switch to joypad 2
+	ldh (<rP1), a
+	ld a, P1.NONE
+	ldh (<rP1), a
 
-	LDH A, (<P1)
-	CP $FE	;should be $FE now that joypad 2 is active
-	LD DE, SgbHleMsg	;if it's not, the SNES code didn't run
-	JR NZ, _end	;or worse... it CRASHED!!!!!!
+	ldh a, (<rP1)
+	cp $FE           ;should be $FE now that joypad 2 is active
+	ld de, SgbHleMsg ;if it's not, the SNES code didn't run
+	jr nz, _end      ;or worse... it CRASHED!!!!!!
 
-	LD DE, SgbLleMsg
+	ld de, SgbLleMsg
 _end:
-	CALL MemCpyNull
-	LD HL, CmdResetMultiplayer	;disable multiplayer mode
-	CALL SgbSendCommand
-	RET
+	call MemCpyNull
+	ld hl, CmdResetMultiplayer ;disable multiplayer mode
+	call SgbSendCommand
+	ret
 
 SgbHleMsg:
-	.asc "HLE", 0
+	.ASC "HLE", 0
 
 SgbLleMsg:
-	.asc "LLE", 0
+	.ASC "LLE", 0
 
 SgbFailMsg:
-	.asc "IDK", 0
+	.ASC "IDK", 0
 
-.ends
+.ENDS
 
-.section "SgbCommands"
+.SECTION "SgbCommands"
 
 CmdResetMultiplayer:
-	.db (MLT_REQ << 3) | 1
-	.db 0
+	.DB (MLT_REQ << 3) | 1
+	.DB 0
 
 ;ICD joypad port
 ;$006004 = player 1 joypad
@@ -189,103 +189,103 @@ CmdResetMultiplayer:
 ;+-------- Start
 
 CmdTestHle1:
-	.db (DATA_SND << 3) | 1
-	.dl $001800
-	.db 11
-	.hex "ADEB02"	;LDA $02EB
-	.hex "2903"	;AND #$03
-	.hex "0990"	;ORA #$90
-	.hex "8F036000"	;STA $006003
+	.DB (DATA_SND << 3) | 1
+	.DL $001800
+	.DB 11
+	.HEX "ADEB02"   ;lda $02EB
+	.HEX "2903"     ;and #$03
+	.HEX "0990"     ;ora #$90
+	.HEX "8F036000" ;sta $006003
 
 CmdTestHle2:
-	.db (DATA_SND << 3) | 1
-	.dl $001800 + 11
-	.db 7
-	.hex "A9F0"	;LDA #$F0	;good luck trying to press all
-	.hex "8F056000"	;STA $006005	;directions on the dpad lmao
-	.hex "60"	;RTS
+	.DB (DATA_SND << 3) | 1
+	.DL $00180B
+	.DB 7
+	.HEX "A9F0"     ;lda #$F0    ;good luck trying to press all
+	.HEX "8F056000" ;sta $006005 ;directions on the dpad lmao
+	.HEX "60"       ;rts
 
 CmdTestHle3:
-	.db (JUMP << 3) | 1
-	.dl $001800	;jump addr
-	.dl $123456	;NMI addr
+	.DB (JUMP << 3) | 1
+	.DL $001800 ;jump addr
+	.DL $123456 ;NMI addr
 
 CmdFreezeScreen:
-	.db (MASK_EN << 3) | 1
-	.db 1
+	.DB (MASK_EN << 3) | 1
+	.DB 1
 
 CmdUnfreezeScreen:
-	.db (MASK_EN << 3) | 1
-	.db 0
+	.DB (MASK_EN << 3) | 1
+	.DB 0
 
 CmdTransferMusic:
-	.db (SOU_TRN << 3) | 1
+	.DB (SOU_TRN << 3) | 1
 
 CmdPlayMusic:
-	.db (SOUND << 3) | 1
-	.db $00	;SFX A
-	.db $00	;SFX B
-	.db $00	;SFX options
-	.db $01	;music ID
+	.DB (SOUND << 3) | 1
+	.DB $00 ;SFX A
+	.DB $00 ;SFX B
+	.DB $00 ;SFX options
+	.DB $01 ;music ID
 
 ;I'm too lazy to get an '816 assembler so here's the patch.
 ;Disables interrupts before transferring sound data, to speed it up
-;.org $0900
-;	LDA $02C2
-;	CMP #$09	;check if command is $09 (SOU_TRN)
-;	BNE end
-;	STZ $4200	;disable IRQs
-;	LDX #$09 * 2
-;	JSR ($8000,X)	;call SOU_TRN handler
-;	LDA #$31
-;	STA $4200	;enable IRQs (and auto joypad)
-;	PLA	;pull return addr from stack
-;	PLA	;to exit command handler
+;.ORG $0900
+;	lda $02C2
+;	cmp #$09      ;check if command is $09 (SOU_TRN)
+;	bne end
+;	stz $4200     ;disable IRQs
+;	ldx #$09 * 2
+;	jsr ($8000,X) ;call SOU_TRN handler
+;	lda #$31
+;	sta $4200     ;enable IRQs (and auto joypad)
+;	pla           ;pull return addr from stack
+;	pla           ;to exit command handler
 ;end:
-;	RTS
+;	rts
 
 CmdPatchSouTrn1:
-	.db (DATA_SND << 3) | 1
-	.dl $010900 ;destination
-	.db 11 ;number of bytes
-	.hex "ADC202"	;LDA $02C2
-	.hex "C909"	;CMP #$09
-	.hex "D00F"	;BNE end
-	.hex "9C0042"	;STZ $4200
-	.hex "A2"	;LDX #..
+	.DB (DATA_SND << 3) | 1
+	.DL $010900 ;destination
+	.DB 11      ;number of bytes
+	.HEX "ADC202" ;lda $02C2
+	.HEX "C909"   ;cmp #$09
+	.HEX "D00F"   ;bne end
+	.HEX "9C0042" ;stz $4200
+	.HEX "A2"     ;ldx #..
 
 CmdPatchSouTrn2:
-	.db (DATA_SND << 3) | 1
-	.dl $01090B ;destination
-	.db 11 ;number of bytes
-	.hex "12"	;... $09 * 2
-	.hex "FC0080"	;JSR ($8000,X)
-	.hex "A931"	;LDA #$31
-	.hex "8D0042"	;STA $4200
-	.hex "68"	;PLA
-	.hex "68"	;PLA
+	.DB (DATA_SND << 3) | 1
+	.DL $01090B ;destination
+	.DB 11      ;number of bytes
+	.HEX "12"     ;... $09 * 2
+	.HEX "FC0080" ;jsr ($8000,X)
+	.HEX "A931"   ;lda #$31
+	.HEX "8D0042" ;sta $4200
+	.HEX "68"     ;pla
+	.HEX "68"     ;pla
 
 CmdPatchSouTrn3:
-	.db (DATA_SND << 3) | 1
-	.dl $010916 ;destination
-	.db 1 ;number of bytes
-	.hex "60"	;RTS
+	.DB (DATA_SND << 3) | 1
+	.DL $010916 ;destination
+	.DB 1       ;number of bytes
+	.HEX "60" ;rts
 
 CmdPatchSouTrn4:
-	.db (DATA_SND << 3) | 1
-	.dl $010800 ;destination
-	.db 3 ;number of bytes
-	.hex "4C0009"	;JMP $0900
+	.DB (DATA_SND << 3) | 1
+	.DL $010800 ;destination
+	.DB 3       ;number of bytes
+	.HEX "4C0009" ;jmp $0900
 
-.ends
+.ENDS
 
-.section "SgbData"
+.SECTION "SgbData"
 
 SgbMusicTest:
-	.dw SgbMusicTest_size
-	.dw $2B00
-	.incbin "musictest.bin" fsize SgbMusicTest_size
-	.dw $0000
-	.dw $0400
+	.DW SgbMusicTest_size
+	.DW $2B00
+	.INCBIN "musictest.bin" FSIZE SgbMusicTest_size
+	.DW $0000
+	.DW $0400
 
-.ends
+.ENDS

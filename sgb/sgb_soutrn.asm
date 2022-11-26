@@ -1,33 +1,33 @@
-.include "sgb/sgb_map.asm"
+.INCLUDE "sgb/sgb_map.asm"
 
-.bank 0 slot 0
-.org 0
+.BANK 0 SLOT 0
+.ORG 0
 
-.section "Sgb SouTrnPatch" keep
+.SECTION "Sgb SouTrnPatch" KEEP
 
 Sgb_SouTrnPatch:
 
-.ends
+.ENDS
 
-.org $900
+.ORG $900
 
-.section "code Sgb SouTrnPatch" after "Sgb SouTrnPatch"
+.SECTION "code Sgb SouTrnPatch" AFTER "Sgb SouTrnPatch"
 
-	.accu 8
-	.index 8
+	.ACCU 8
+	.INDEX 8
 
-	JMP +
-+:	LDA $02C2
-	CMP #$09	;check if command is $09 (SOU_TRN)
-	BNE _end
-	STZ $4200	;disable IRQs
-	LDX #$09 * 2
-	JSR ($8000,X)	;call SOU_TRN handler
-	LDA #$31
-	STA $4200	;enable IRQs (and auto joypad)
-	PLA	;pull return addr from stack
-	PLA	;to exit command handler
+	jmp +
++:	lda $02C2
+	cmp #$09      ;check if command is $09 (SOU_TRN)
+	bne _end
+	stz $4200     ;disable IRQs
+	ldx #$09 * 2
+	jsr ($8000,X) ;call SOU_TRN handler
+	lda #$31
+	sta $4200     ;enable IRQs (and auto joypad)
+	pla           ;pull return addr from stack
+	pla           ;to exit command handler
 _end:
-	RTS
+	rts
 
-.ends
+.ENDS

@@ -1,15 +1,15 @@
-.include "memmap.inc"
-.include "gameboy.inc"
-.include "gbapu.inc"
-.include "enums.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "gameboy.inc"
+.INCLUDE "gbapu.inc"
+.INCLUDE "enums.inc"
 
-.section Reset
+.SECTION Reset
 
 Reset:
-	LD SP, $E000
+	ld sp, $E000
 
-;keep HW model in E until RAM clearing is done
-	LD E, $00
+	;keep HW model in E until RAM clearing is done
+	ld e, $00
 
 ;Accumulator:
 ;$01 = DMG, SGB
@@ -51,122 +51,122 @@ Reset:
 ;                  $0A
 
 DetectCgb:
-	CP $11	;CGB hardware?
-	JR NZ, DetectSgb
-	SET B_HW_CGB, E
+	cp $11 ;CGB hardware?
+	jr nz, DetectSgb
+	set B_HW_CGB, e
 
-	LD A, B
-	CP $01	;AGB?
-	JR NZ, ResetHardware
-	SET B_HW_AGB, E
-	JR ResetHardware
+	ld a, b
+	cp $01 ;AGB?
+	jr nz, ResetHardware
+	set B_HW_AGB, e
+	jr ResetHardware
 
 DetectSgb:
-	CP $FF
-	PUSH AF	;push A = $FF test
+	cp $FF
+	push af ;push A = $FF test
 
-	LD A, C
-	CP $14	;SGB?
-	JR NZ, DetectMgb
-	SET B_HW_SGB, E
+	ld a, c
+	cp $14 ;SGB?
+	jr nz, DetectMgb
+	set B_HW_SGB, e
 
-	POP AF	;SGB2?
-	JR NZ, ResetHardware
-	SET B_HW_SGB2, E
-	JR ResetHardware
+	pop af ;SGB2?
+	jr nz, ResetHardware
+	set B_HW_SGB2, e
+	jr ResetHardware
 
 DetectMgb:
-	POP AF
-	JR NZ, ResetHardware	;MGB?
-	SET B_HW_MGB, E
+	pop af
+	jr nz, ResetHardware ;MGB?
+	set B_HW_MGB, e
 
-;hardware check complete
+	;hardware check complete
 
 ResetHardware:
-	CALL DisableLcd
-	LD A, P1.NONE
-	LDH (<P1), A	;disable joypad
-	LD A, 144
-	LDH (<WY), A	;set window offscreen
-	LDH (<WX), A
-	LD A, $E4
-	LDH (<BGP), A
-	LDH (<OBP0), A
-	LDH (<OBP1), A
+	call DisableLcd
+	ld a, P1.NONE
+	ldh (<rP1), a ;disable joypad
+	ld a, 144
+	ldh (<rWY), a ;set window offscreen
+	ldh (<rWX), a
+	ld a, $E4
+	ldh (<rBGP), a
+	ldh (<rOBP0), a
+	ldh (<rOBP1), a
 
-	XOR A
-	LDH (<APUSTAT), A	;disable APU
-	LDH (<STAT), A	;disable STAT IRQ
-	LDH (<SCX), A	;reset scroll
-	LDH (<SCY), A
+	xor a
+	ldh (<rAPUSTAT), a ;disable APU
+	ldh (<rSTAT), a    ;disable STAT IRQ
+	ldh (<rSCX), a     ;reset scroll
+	ldh (<rSCY), a
 
-;clear WRAM
-	LD HL, SP-1
--:		LD (HL-), A
-	BIT 6, H
-	JR NZ, -
+	;clear WRAM
+	ld hl, sp-1
+-:		ld (hl-), a
+	bit 6, h
+	jr nz, -
 
-;load OAM upload routine into HRAM
-	LD HL, OamUpload
-	LD BC, _sizeof_OamUpload << 8 | <oamUpload
--:		LD A, (HL+)
-		LDH (C), A
-		INC C
-	DEC B
-	JR NZ, -
+	;load OAM upload routine into HRAM
+	ld hl, OamUpload
+	ld bc, _sizeof_OamUpload << 8 | <hOamUpload
+-:		ld a, (hl+)
+		ldh (c), a
+		inc c
+	dec b
+	jr nz, -
 
-;clear HRAM and IE
-	XOR A
--:		LDH (C), A
-	INC C
-	JR NZ, -
+	;clear HRAM and IE
+	xor a
+-:		ldh (c), a
+	inc c
+	jr nz, -
 
-;reset mapper
-	INC A
-	LD (MBC_BANK), A
-	LDH (<curBank), A
+	;reset mapper
+	inc a
+	ld (MBC_BANK), a
+	ldh (<hCurBank), a
 
-;write HW model to memory
-	LD A, E
-	LDH (<hwModel), A
+	;write HW model to memory
+	ld a, e
+	ldh (<hHwModel), a
 
 SgbPatches:
-	BIT B_HW_SGB, A
-	JR Z, ResetApu	;skip if not SGB
+	bit B_HW_SGB, a
+	jr z, ResetApu ;skip if not SGB
 
-	LD HL, CmdPatchSouTrn1
-	CALL SgbSendCommand
-	LD HL, CmdPatchSouTrn2
-	CALL SgbSendCommand
-	LD HL, CmdPatchSouTrn3
-	CALL SgbSendCommand
-	LD HL, CmdPatchSouTrn4
-	CALL SgbSendCommand
+	ld hl, CmdPatchSouTrn1
+	call SgbSendCommand
+	ld hl, CmdPatchSouTrn2
+	call SgbSendCommand
+	ld hl, CmdPatchSouTrn3
+	call SgbSendCommand
+	ld hl, CmdPatchSouTrn4
+	call SgbSendCommand
 
-	CALL SgbDetectHle
+	call SgbDetectHle
 
 ResetApu:
-	LD A, APUSTAT.ON
-	LDH (<APUSTAT), A
-	LD A, APUVOL.7L | APUVOL.7R
-	LDH (<APUVOL), A
+	ld a, APUSTAT.ON
+	ldh (<rAPUSTAT), a
+	ld a, APUVOL.7L | APUVOL.7R
+	ldh (<rAPUVOL), a
 
-	LD HL, WaveSquare
-	CALL SetWaveRam
+	ld hl, WaveSquare
+	call SetWaveRam
 
-;done! now we jump to main
-	EI
-	JP Main
+	;done! now we jump to main
+	ei
+	jp Main
 
 
-;A = >oamBuffer
-;B = $28
-;C = <DMA
+;input: A = >oamBuffer
+;       B = $28
+;       C = <rDMA
 OamUpload:
-	LDH (C), A
--:		DEC B
-	JR NZ, -
-	RET Z	;Z adds 1 Mcycle delay to prevent crashing
+	ldh (c), a
+-:		dec b
+	jr nz, -
+	ret z ;Z adds 1 Mcycle delay to prevent crashing
 OamUpload_end:
 	
-.ends
+.ENDS

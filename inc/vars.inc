@@ -1,42 +1,42 @@
-.struct ACTOR
-	id	db
-	x	dw
-	y	dw
-	padding	dsb 3
-.endst
+.STRUCT ACTOR
+	id      DB
+	x       DW
+	y       DW
+	padding DSB 3
+.ENDST
 
-.export _sizeof_ACTOR
+.EXPORT _sizeof_ACTOR
 
-.ramsection "hram_vars" slot 3
-	oamUpload:	dsb 5
+.RAMSECTION "hram_vars" SLOT 3
+	hOamUpload: DSB 5
 
-	loopCount: db
+	hLoopCount: DB
 
-	pad1:	db
-	pad1Pressed:	db
+	hPad1:        DB
+	hPad1Pressed: DB
 
-	playerX:	db	;Hey! This should be in the actor system, and not hardcoded!
-	playerY:	db
+	hPlayerX: DB ;Hey! This should be in the actor system, and not hardcoded!
+	hPlayerY: DB
 
-	curBank:	db
-	vblankCount:	db
-	frameCount:	db
-	vblankSetting:	db
+	hCurBank:       DB
+	hVblankCount:   DB
+	hFrameCount:    DB
+	hVblankSetting: DB
 
-	hwModel:	db	;bit 0: CGB  bit 1: SGB  bit 2: AGB  bit 3: SGB2  bit 4: MGB
-.ends
+	hHwModel: DB ;bit 0: CGB  bit 1: SGB  bit 2: AGB  bit 3: SGB2  bit 4: MGB
+.ENDS
 
-.ramsection "SpriteBuffer" slot 2 align 256
-	spriteBuffer:	dsb 160
-	uploadAddr:	dsb 32
-	spSave:	dw
-.ends
+.RAMSECTION "SpriteBuffer" SLOT 2 ALIGN 256
+	wSpriteBuffer: DSB 160
+	wUploadAddr:   DSB 32
 
-.ramsection "UploadData" slot 2 align 256
-	uploadData:	dsb 256
-.ends
+	wSpSave: DW
+.ENDS
 
-.ramsection "ActorData" slot 2 align 256
-	actorData:	dsb 256
-.ends
+.RAMSECTION "UploadData" SLOT 2 ALIGN 256
+	wUploadData: DSB 256
+.ENDS
 
+.RAMSECTION "ActorData" SLOT 2 ALIGN 256
+	wActorData: DSB 256
+.ENDS

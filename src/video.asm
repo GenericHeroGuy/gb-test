@@ -1,20 +1,20 @@
-.include "memmap.inc"
-.include "gameboy.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "gameboy.inc"
 
-.bank 0 slot 0
-.org 0
+.BANK 0 SLOT 0
+.ORG 0
 
-.section "Video"
+.SECTION "Video"
 
-;uses AF
+;uses:  AF
 DisableLcd:
-	LDH A, (<LY)
-	CP 144
-	JR C, DisableLcd
+	ldh a, (<rLY)
+	cp 144
+	jr c, DisableLcd
 
-	LDH A, (<LCDC)
-	AND ~LCDC.ON
-	LDH (<LCDC), A
-	RET
+	ldh a, (<rLCDC)
+	and ~LCDC.ON
+	ldh (<rLCDC), a
+	ret
 
-.ends
+.ENDS

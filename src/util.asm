@@ -1,46 +1,46 @@
-.include "memmap.inc"
+.INCLUDE "memmap.inc"
 
-.bank 0 slot 0
-.org 0
+.BANK 0 SLOT 0
+.ORG 0
 
-.section "Util"
+.SECTION "Util"
 
-;BC = byte count
-;DE = source addr
-;HL = target addr
-;uses AF
+;input: BC = byte count
+;       DE = source addr
+;       HL = target addr
+;uses:  AF BC DE HL
 MemCpy:
-		LD A, (DE)
-		LD (HL+), A
-		INC DE
-	DEC C
-	JR NZ, MemCpy
-	DEC B
-	JR NZ, MemCpy
-	RET
+		ld a, (de)
+		ld (hl+), a
+		inc de
+	dec c
+	jr nz, MemCpy
+	dec b
+	jr nz, MemCpy
+	ret
 
-;DE = source addr
-;HL = target addr
-;uses AF
+;input: DE = source addr
+;       HL = target addr
+;uses:  AF DE HL
 ;like StrCpy, but doesn't copy the last null byte
 ;useful for VRAM transfers
 MemCpyNull:
-	LD A, (DE)
-	OR A
-	RET Z ;exit on null byte
-	LD (HL+), A
-	INC DE
-	JR MemCpyNull
+	ld a, (de)
+	or a
+	ret z ;exit on null byte
+	ld (hl+), a
+	inc de
+	jr MemCpyNull
 
-;DE = source addr
-;HL = target addr
-;uses AF
+;input: DE = source addr
+;       HL = target addr
+;uses:  AF DE HL
 StrCpy:
-	LD A, (DE)
-	LD (HL+), A
-	INC DE
-	OR A
-	JR NZ, StrCpy
-	RET
+		ld a, (de)
+		ld (hl+), a
+		inc de
+	or a
+	jr nz, StrCpy ;exit on null byte
+	ret
 
-.ends
+.ENDS

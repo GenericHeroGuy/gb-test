@@ -1,59 +1,59 @@
-.include "memmap.inc"
-.include "gbapu.inc"
-.include "enums.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "gbapu.inc"
+.INCLUDE "enums.inc"
 
-.section "player"
+.SECTION "player"
 
 Player:
-	LDH A, (<pad1)
-	LD D, A
+	ldh a, (<hPad1)
+	ld d, a
 
-	LDH A, (<playerY)
-	RLC D
-	JR NC, +
-	ADD $01
+	ldh a, (<hPlayerY)
+	rlc d
+	jr nc, +
+	add $01
 
-+:	RLC D
-	JR NC, +
-	SUB $01
-+:	LDH (<playerY), A
-	LD B, A
++:	rlc d
+	jr nc, +
+	sub $01
++:	ldh (<hPlayerY), a
+	ld b, a
 
-	LDH A, (<playerX)
-	RLC D
-	JR NC, +
-	SUB $01
+	ldh a, (<hPlayerX)
+	rlc d
+	jr nc, +
+	sub $01
 
-+:	RLC D
-	JR NC, +
-	ADD $01
-+:	LDH (<playerX), A
-	LD C, A
++:	rlc d
+	jr nc, +
+	add $01
++:	ldh (<hPlayerX), a
+	ld c, a
 
-	LD A, 0
-	CALL DrawMetasprite
+	ld a, 0
+	call DrawMetasprite
 
-	LDH A, (<pad1Pressed)
-	AND PAD_START
-	LD DE, SgbMusicTest
-	LD BC, _sizeof_SgbMusicTest
-	CALL NZ, SgbTransferMusic
+	ldh a, (<hPad1Pressed)
+	and PAD_START
+	ld de, SgbMusicTest
+	ld bc, _sizeof_SgbMusicTest
+	call nz, SgbTransferMusic
 
-	LDH A, (<pad1Pressed)
-	AND PAD_SELECT
-	RET Z
-	LD A, C1SWEEP.F0
-	LDH (<C1SWEEP), A
-	LD A, C1DUTY.25 | 0
-	LDH (<C1DUTY), A
-	LD A, C1VOL.15 | C1VOL.DOWN | C1VOL.F0
-	LDH (<C1VOL), A
-	LD A, 0
-	LDH (<C1FREQ), A
-	LD A, C1CTRL.RESTART | $40 | 0
-	LDH (<C1CTRL), A
-	LD A, APUMIX.1L | APUMIX.1R
-	LDH (<APUMIX), A
-	RET
+	ldh a, (<hPad1Pressed)
+	and PAD_SELECT
+	ret z
+	ld a, C1SWEEP.F0
+	ldh (<rC1SWEEP), a
+	ld a, C1DUTY.25 | 0
+	ldh (<rC1DUTY), a
+	ld a, C1VOL.15 | C1VOL.DOWN | C1VOL.F0
+	ldh (<rC1VOL), a
+	ld a, 0
+	ldh (<rC1FREQ), a
+	ld a, C1CTRL.RESTART | $40 | 0
+	ldh (<rC1CTRL), a
+	ld a, APUMIX.1L | APUMIX.1R
+	ldh (<rAPUMIX), a
+	ret
 
-.ends
+.ENDS

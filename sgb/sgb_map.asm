@@ -1,16 +1,16 @@
-.memorymap
-	defaultslot 0
-	slot 0 start $0000 size $4000	;MBC fixed bank
-	slot 1 start $4000 size $4000	;MBC switched bank
-	slot 2 start $C000 size $2000 name "WRAM"	;Work RAM
-	slot 3 start $FF80 size $007F name "HRAM"	;High RAM
-.endme
+.MEMORYMAP
+	DEFAULTSLOT 0
+	SLOT 0 START $0000 SIZE $4000             ;MBC fixed bank
+	SLOT 1 START $4000 SIZE $4000             ;MBC switched bank
+	SLOT 2 START $C000 SIZE $2000 NAME "WRAM" ;Work RAM
+	SLOT 3 START $FF80 SIZE $007F NAME "HRAM" ;High RAM
+.ENDME
 
 ;must match GB rombankmap
-.rombankmap
-	bankstotal 4
-	banksize $4000
-	banks 4
-.endro
+.ROMBANKMAP
+	BANKSTOTAL 4
+	BANKSIZE $4000
+	BANKS 4
+.ENDRO
 
-.emptyfill $FE
+.EMPTYFILL $FE

@@ -1,21 +1,21 @@
-.include "memmap.inc"
+.INCLUDE "memmap.inc"
 
-.gbheader
-	name "GB Test"
-	licenseecodenew "NO"
-	cartridgetype 1	;ROM+MBC1
-	ramsize 0
-	countrycode 1
-	destinationcode 1
-	version 0
+.GBHEADER
+	NAME "GB Test"
+	LICENSEECODENEW "NO"
+	CARTRIDGETYPE 1 ;ROM+MBC1
+	RAMSIZE 0
+	COUNTRYCODE 1
+	DESTINATIONCODE 1
+	VERSION 0
 
-	nintendologo
-	romsgb
-.endgb
+	NINTENDOLOGO
+	ROMSGB
+.ENDGB
 
-.bank 0 slot 0
-.orga $100
-.section "ENTRYPOINT" size 4 force
-	DI
-	JP Reset
-.ends
+.BANK 0 SLOT 0
+.ORGA $100
+.SECTION "ENTRYPOINT" SIZE 4 FORCE
+	di
+	jp Reset
+.ENDS

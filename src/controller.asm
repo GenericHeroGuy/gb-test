@@ -1,51 +1,50 @@
-.include "memmap.inc"
-.include "gameboy.inc"
-.include "vars.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "gameboy.inc"
+.INCLUDE "vars.inc"
 
-.section "Controller"
+.SECTION "Controller"
 
-;uses	AF BC
+;uses:  AF BC
 ReadInput:
-	LD C, <P1
+	ld c, <rP1
 
-	LD A, P1.DPAD
-	LDH (C), A	;enable D-pad
+	ld a, P1.DPAD
+	ldh (c), a ;enable D-pad
 
-	LDH A, (C)	;must wait 24 Tcycles
-	LDH A, (C)
-	LDH A, (C)
+	ldh a, (c) ;must wait 24 Tcycles
+	ldh a, (c)
+	ldh a, (c)
 
-	AND $0F
-	LD B, A	;save D-pad in B
+	and $0F
+	ld b, a ;save D-pad in B
 
-	LD A, P1.KEYS
-	LDH (C), A	;enable buttons
+	ld a, P1.KEYS
+	ldh (c), a ;enable buttons
 
-	PUSH AF	;must wait 72 Tcycles
-	POP AF
-	PUSH AF
-	POP AF
-	LDH A, (C)
-	LDH A, (C)
+	push af ;must wait 72 Tcycles
+	pop af
+	push af
+	pop af
+	ldh a, (c)
+	ldh a, (c)
 
-	AND $0F
-	JP Z, Reset	;A+B+Select+Start = Reset game
-	SWAP B
-	OR B	;set D-pad bits
-	CPL	;now joypad data is in A
+	and $0F
+	jp z, Reset ;A+B+Select+Start = Reset game
+	swap b
+	or b        ;set D-pad bits
+	cpl         ;now joypad data is in A
 
-	LD B, A	;save in B...
-	LDH A, (<pad1)	;get last frame's joypad data
-	XOR B	;do some magic stuff
-	AND B
-	LDH (<pad1Pressed), A	;set newly pressed buttons
+	ld b, a         ;save in B...
+	ldh a, (<hPad1) ;get last frame's joypad data
+	xor b           ;do some magic stuff
+	and b
+	ldh (<hPad1Pressed), a ;set newly pressed buttons
 
-	LD A, B
-	LDH (<pad1), A	;and now, save the joypad values
+	ld a, b
+	ldh (<hPad1), a ;and now, save the joypad values
 
-	LD A, P1.NONE
-	LDH (C), A	;disable joypad
+	ld a, P1.NONE
+	ldh (c), a ;disable joypad
+	ret
 
-	RET
-
-.ends
+.ENDS

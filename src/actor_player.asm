@@ -1,16 +1,16 @@
-.include "memmap.inc"
-.include "enums.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "enums.inc"
 
-.bank ACTOR_BANK slot 1
+.BANK ACTOR_BANK SLOT 1
 
-.section "Actor_Player"
+.SECTION "Actor_Player"
 
 Actor_Player:
-	LD A, $01
-	RET
+	ld a, $01
+	ret
 
 Init_Player:
-	LD A, $02
-	RET
+	ld a, $02
+	ret
 
-.ends
+.ENDS

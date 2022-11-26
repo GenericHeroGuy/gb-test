@@ -1,46 +1,46 @@
-.macro GetPointerToHL
-	LD A, (HL+)
-	LD H, (HL)
-	LD L, A
-.endm
+.MACRO GetPointerToHL
+	ld a, (hl+)
+	ld h, (hl)
+	ld l, a
+.ENDM
 
-.macro GetPointerToDE
-	LD A, (HL+)
-	LD D, (HL)
-	LD E, A
-.endm
+.MACRO GetPointerToDE
+	ld a, (hl+)
+	ld d, (hl)
+	ld e, a
+.ENDM
 
-.macro FarCall args Label
-	LD B, :Label
-	LD HL, Label
-	RST $00	;see vectors.asm
-.endm
+.MACRO FarCall ARGS Label
+	ld b, :Label
+	ld hl, Label
+	rst $00	;see vectors.asm
+.ENDM
 
-.macro FarJp args Label
-	LD A, :Label
-	LD HL, Label
-	RST $10
-.endm
+.MACRO FarJp ARGS Label
+	ld a, :Label
+	ld hl, Label
+	rst $10
+.ENDM
 
-.macro SetBank args Bank
-	LD A, Bank
-	RST $18
-.endm
+.MACRO SetBank ARGS Bank
+	ld a, Bank
+	rst $18
+.ENDM
 
 ;push current bank on stack, then set new bank
-.macro PushBank args Bank
-	LDH A, (<curBank)
-	PUSH AF
-	LD A, Bank
-	RST $18
-.endm
+.MACRO PushBank ARGS Bank
+	ldh a, (<hCurBank)
+	push af
+	ld a, Bank
+	rst $18
+.ENDM
 
 ;restore pushed bank
-.macro PopBank args Bank
-	POP AF
-	RST $18
-.endm
+.MACRO PopBank ARGS Bank
+	pop af
+	rst $18
+.ENDM
 
-.macro CallHl
-	RST $20
-.endm
+.MACRO CallHl
+	rst $20
+.ENDM

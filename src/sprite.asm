@@ -1,71 +1,70 @@
-.include "memmap.inc"
-.include "gameboy.inc"
-.include "macros.inc"
+.INCLUDE "memmap.inc"
+.INCLUDE "gameboy.inc"
+.INCLUDE "macros.inc"
 
-.bank 0 slot 0
-.org 0
+.BANK 0 SLOT 0
+.ORG 0
 
-.section "Sprite"
+.SECTION "Sprite"
 
-;uses	AF BC HL
+;uses:  AF BC HL
 ClearSprites:
-	LD HL, spriteBuffer
-	LD BC, 4
-	XOR A
-	.rept 39
-		LD (HL), A
-		ADD HL, BC
-	.endr
-	LD (HL), A
-	RET
+	ld hl, wSpriteBuffer
+	ld bc, 4
+	xor a
+	.REPT 39
+		ld (hl), a
+		add hl, bc
+	.ENDR
+	ld (hl), a
+	ret
 
-;A = metasprite ID
-;B = metasprite Y
-;C = metasprite X
-;uses	AF BC DE HL
+;input: A = metasprite ID
+;       B = metasprite Y
+;       C = metasprite X
+;uses:  AF BC DE HL
 DrawMetasprite:
-	LD L, A	;load into HL, multiply by 2 (left shit), add MetaspritePointers
-	LD H, 0
-	ADD HL, HL
-	LD DE, MetaspritePointers
-	ADD HL, DE	;HL = pointer to metasprite pointer
+	ld l, a    ;load into HL, multiply by 2 (left shit), add MetaspritePointers
+	ld h, 0
+	add hl, hl
+	ld de, MetaspritePointers
+	add hl, de ;HL = pointer to metasprite pointer
 	GetPointerToHL
+	ld de, wSpriteBuffer
 
-	LD DE, spriteBuffer
+	ld a, (hl+) ;number of sprites
+	ldh (<hLoopCount), a
 
-	LD A, (HL+)	;number of sprites
-	LDH (<loopCount), A
-
-	LD A, B ;add 16 to Y position
-	ADD 16
-	LD B, A
-	LD A, C	;add 8 to X position
-	ADD 8
-	LD C, A
+	ld a, b ;add 16 to Y position
+	add 16
+	ld b, a
+	ld a, c ;add 8 to X position
+	add 8
+	ld c, a
 
 SpriteLoop:
-	LD A, (HL+)	;get sprite Y
-	ADD B	;add metasprite Y
-	LD (DE), A
-	INC DE
+	ld a, (hl+) ;get sprite Y
+	add b       ;add metasprite Y
+	ld (de), a
+	inc de
 
-	LD A, (HL+)	;get sprite X
-	ADD C	;add metasprite X
-	LD (DE), A
-	INC DE
+	ld a, (hl+) ;get sprite X
+	add c       ;add metasprite X
+	ld (de), a
+	inc de
 
-	LD A, (HL+)	;get sprite tile
-	LD (DE), A
-	INC DE
+	ld a, (hl+) ;get sprite tile
+	ld (de), a
+	inc de
 
-	LD A, (HL+)	;get sprite attrib
-	LD (DE), A
-	INC DE
+	ld a, (hl+) ;get sprite attrib
+	ld (de), a
+	inc de
 
-	LDH A, (<loopCount)
-	DEC A
-	LDH (<loopCount), A
-	JR NZ, SpriteLoop
-	RET
+	ldh a, (<hLoopCount)
+	dec a
+	ldh (<hLoopCount), a
+	jr nz, SpriteLoop
+	ret
 
-.ends
+.ENDS

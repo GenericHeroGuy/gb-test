@@ -4,3 +4,8 @@
 *.gb
 *.sym
 linkfile
+
+chr/
+dep/
+obj/
+out/
