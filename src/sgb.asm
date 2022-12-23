@@ -23,27 +23,25 @@ SgbSendCommand:
 ;uses:  AF BC DE HL
 SgbSendCommandNoDelay:
 	ld b, 16 ;number of bytes to transfer
-	ld e, b  ;LD E, P1.KEYS
+	ld e, P1.DPAD
 	xor a    ;LD A, P1.BOTH
 	ld c, a  ;LD C, <rP1
 
 	ldh (c), a ;send STOP command (aka start receiving)
-	ld a, P1.NONE
+	cpl        ;LD A, P1.NONE
 	ldh (c), a
 
 SgbSendByte:
 	ld a, (hl+)
-	ld d, a ;fetch byte to D
+	ld d, a
 
 SgbSendBit:
 	.REPT 8
-		ld a, e    ;set bit to transfer to ZERO
+		xor a
 		rrc d      ;shift out data bit
-		jr c, +    ;if it's ONE,
-		add a, a   ;shift A left, setting bit to transfer to ONE
-
-	+:	ldh (c), a ;now transfer bit to SGB
-		ld a, P1.NONE
+		sbc e      ;if carry clear, $E0 (P1.KEYS). if carry set, $DF (P1.DPAD)
+		ldh (c), a
+		sbc a      ;set to $FF (P1.NONE)
 		ldh (c), a
 	.ENDR
 
@@ -51,9 +49,9 @@ SgbSendBit:
 	jr nz, SgbSendByte
 
 SgbSendStop:
-	ld a, P1.DPAD ;send stop bit (ONE)
+	ld a, e       ;send stop bit (ONE)
 	ldh (c), a
-	add e         ;LD A, P1.NONE (disable joypad)
+	ld a, P1.NONE ;disable joypad
 	ldh (c), a
 	ret
 
@@ -62,7 +60,6 @@ SgbSendStop:
 ;uses:  AF BC DE HL
 SgbSendVram:
 	ld hl, $8000
-	inc b ;haha ugly hack
 	call MemCpy
 
 	;fill tilemap with incrementing tile ID

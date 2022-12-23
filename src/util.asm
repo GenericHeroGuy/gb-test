@@ -10,13 +10,16 @@
 ;       HL = target addr
 ;uses:  AF BC DE HL
 MemCpy:
-		ld a, (de)
+	dec bc ;correct loop counter
+	inc b
+	inc c
+	-:	ld a, (de)
 		ld (hl+), a
 		inc de
 	dec c
-	jr nz, MemCpy
+	jr nz, -
 	dec b
-	jr nz, MemCpy
+	jr nz, -
 	ret
 
 ;input: DE = source addr

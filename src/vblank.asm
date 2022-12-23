@@ -13,7 +13,7 @@ VblankUploadFill:
 	.REPT 400
 		ld (hl+), a
 	.ENDR
-	inc de
+	inc e
 	jp Vblank_VramUpload
 
 VblankUploadDotted:
@@ -21,7 +21,7 @@ VblankUploadDotted:
 		ld a, (de)
 		pop hl
 		ld (hl), a
-		inc de
+		inc e
 	.ENDR
 	jp Vblank_VramUpload
 
@@ -30,7 +30,7 @@ VblankUploadColumn:
 	.REPT 32
 		ld a, (de)
 		ld (hl+), a
-		inc de
+		inc e
 		add hl, bc
 	.ENDR
 	jr Vblank_VramUpload
@@ -40,7 +40,7 @@ VblankUploadNormal:
 	.REPT 32
 		ld a, (de)
 		ld (hl+), a
-		inc de
+		inc e
 	.ENDR
 	jr Vblank_VramUpload
 
@@ -64,8 +64,8 @@ Vblank_VramUpload:
 	ret nz     ;exit. otherwise, fetch and jump to upload routine
 
 Vblank_VramUploadEnd:
-	ld hl, wSpSave ;reload stack pointer
-	GetPointerToHL
+	ld sp, wSpSave ;reload stack pointer
+	pop hl
 	ld sp, hl
 
 Vblank_OamUpload:
@@ -75,7 +75,7 @@ Vblank_OamUpload:
 
 	ld hl, hVblankCount
 	inc (hl)
-	inc hl ;LD HL, hFrameCount
+	inc l ;LD HL, hFrameCount
 	inc (hl)
 
 	ei

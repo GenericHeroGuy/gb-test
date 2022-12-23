@@ -46,20 +46,20 @@ SpriteLoop:
 	ld a, (hl+) ;get sprite Y
 	add b       ;add metasprite Y
 	ld (de), a
-	inc de
+	inc e
 
 	ld a, (hl+) ;get sprite X
 	add c       ;add metasprite X
 	ld (de), a
-	inc de
+	inc e
 
 	ld a, (hl+) ;get sprite tile
 	ld (de), a
-	inc de
+	inc e
 
 	ld a, (hl+) ;get sprite attrib
 	ld (de), a
-	inc de
+	inc e
 
 	ldh a, (<hLoopCount)
 	dec a
