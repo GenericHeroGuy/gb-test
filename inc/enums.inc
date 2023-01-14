@@ -21,7 +21,21 @@ B_HW_AGB  = 2
 B_HW_SGB2 = 3
 B_HW_MGB  = 4
 
+;actor struct
+.STRUCT Actor SIZE 8
+	bank DB
+	addr DW
+	y    DB
+	x    DB
+.ENDST
+
+actor.bank = 0
+actor.addr = 1
+actor.y = 3
+actor.x = 4
+
 ACTOR_BANK = 1
+NUM_ACTORS = 24
 
 .IFDEF rLCDC
 	LCDC_DEFAULT = LCDC.ON | LCDC.WIN9C00 | LCDC.WINON | LCDC.CHR8800 | LCDC.BG9800 | LCDC.OBJ8 | LCDC.OBJON | LCDC.BGON
@@ -35,6 +49,3 @@ ACTOR_BANK = 1
 	map "," = $A5
 	map "." = $A6
 .ENDA
-
-.ENUMID 1
-	.ENUMID Player.ID

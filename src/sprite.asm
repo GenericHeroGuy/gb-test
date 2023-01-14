@@ -19,18 +19,14 @@ ClearSprites:
 	ld (hl), a
 	ret
 
-;input: A = metasprite ID
+;input: HL = pointer to metasprite data
 ;       B = metasprite Y
 ;       C = metasprite X
 ;uses:  AF BC DE HL
 DrawMetasprite:
-	ld l, a    ;load into HL, multiply by 2 (left shit), add MetaspritePointers
-	ld h, 0
-	add hl, hl
-	ld de, MetaspritePointers
-	add hl, de ;HL = pointer to metasprite pointer
-	GetPointerToHL
-	ld de, wSpriteBuffer
+	ld d, >wSpriteBuffer
+	ldh a, (<hOamIndex)
+	ld e, a
 
 	ld a, (hl+) ;number of sprites
 	ldh (<hLoopCount), a
@@ -43,6 +39,10 @@ DrawMetasprite:
 	ld c, a
 
 SpriteLoop:
+	ld a, e
+	cp $A0
+	jr z, SpriteOverflow
+
 	ld a, (hl+) ;get sprite Y
 	add b       ;add metasprite Y
 	ld (de), a
@@ -65,6 +65,13 @@ SpriteLoop:
 	dec a
 	ldh (<hLoopCount), a
 	jr nz, SpriteLoop
+
+	ld a, e
+	ldh (<hOamIndex), a
 	ret
+
+SpriteOverflow:
+	ld e, 0
+	jr SpriteLoop
 
 .ENDS

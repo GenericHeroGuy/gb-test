@@ -5,63 +5,76 @@
 .BANK 0 SLOT 0
 .ORG 0
 
-.SECTION "Actor"
+.SECTION "Add actor"
 
-;input: A = ID of actor to add
+;input: A = bank of actor to add
 ;       BC = argument to actor init code
+;       DE = jump address
 ;uses:  AF BC DE HL
 AddActor:
 	push af
-	ld hl, wActorData
-	ld de, _sizeof_ACTOR
+	ld hl, wActor0 - 256
 
-	.DB $FE ;skip first ADD HL, DE. becomes CP A, $09
-	_FindActor:
-		add hl, de
+_FindActor:
+		inc h
 		ld a, (hl)
-	or a
+		inc a ;end of actor list? (bank = $FF)
+		jr z, ActorOverflow
+	dec a
 	jr nz, _FindActor
 
 	pop af
-	ld (hl), a ;write ID
-	push hl    ;save actor's address in RAM
-
-	;now get the index into ActorInitPointers...
 	ld l, a
-	ld h, 0
-	add hl, hl
-	ld de, ActorInitPointers
-	add hl, de
-	GetPointerToDE
+	PushBank
+	ld a, l
+	ldh (<hCurBank), a
+	ld (MBC_BANK), a
+
+	ld l, actor.bank
+	ld (hl+), a ;set bank
+	CallDE
+
+	pop af
+	ldh (<hCurBank), a
+	ld (MBC_BANK), a
+	ret
+
+ActorOverflow:
+	pop af
+	ret
+
+.ENDS
+
+.SECTION "Run actors"
+
+;uses:  AF BC DE HL
+;       HL = RAM address of actor
+;       DE = jump address
+;       E =  num of actors
+RunActors:
+	ld hl, wActor0 - 256
+
+_FindActor:
+		inc h
+		ld a, (hl)
+	or a
+	jr z, _FindActor
+
+;set bank
+	ldh (<hCurBank), a
+	ld (MBC_BANK), a
+;end of actor list? (bank = $FF)
+	inc a
+	ret z
+;get actor's jump address
+	push hl
+	inc l
+	ld a, (hl+)
+	ld d, (hl)
+	ld e, a
+	CallDE
 
 	pop hl
-	PushBank ACTOR_BANK
-	call +
-	PopBank
-	ret
-
-+:	push de
-	ret
-
-;uses:	AF BC DE HL
-RunActors:
-	SetBank ACTOR_BANK
-	ld hl, wActorData
-
-.ENDS
-
-.SECTION "ActorPointers"
-
-ActorPointers:
-	.DW 0
-	.DW Actor_Player
-
-.ENDS
-
-.SECTION "ActorInitPointers"
-
-ActorInitPointers:
-	.DW 0
-	.DW Init_Player
+	jr _FindActor
 
 .ENDS

@@ -34,15 +34,17 @@ FarCall_jump:
 	ret
 .ENDS
 
-;CallHl macro
+;CallHL macro
 .ORGA $20
 .SECTION "INT_RST20" SIZE 8 FORCE
 	jp hl
 .ENDS
 
+;CallDE macro
 .ORGA $28
 .SECTION "INT_RST28" SIZE 8 FORCE
-	jp Reset
+	push de
+	ret
 .ENDS
 
 .ORGA $30

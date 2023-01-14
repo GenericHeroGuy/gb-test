@@ -1,6 +1,5 @@
 .INCLUDE "memmap.inc"
 .INCLUDE "gameboy.inc"
-.INCLUDE "vars.inc"
 .INCLUDE "macros.inc"
 
 .SECTION "Controller"

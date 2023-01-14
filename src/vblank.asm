@@ -10,7 +10,7 @@
 ;the LD A, (DE) always comes first so the first load can be skipped (see Vblank_VramUpload)
 
 VblankUploadFill:
-	.REPT 400
+	.REPT 440
 		ld (hl+), a
 	.ENDR
 	inc e
@@ -69,11 +69,14 @@ Vblank_VramUploadEnd:
 	ld sp, hl
 
 Vblank_OamUpload:
+	ldh a, (<hVblankSetting)
+	add a
+	jr z, +
 	ld a, >wSpriteBuffer
 	ld bc, $28 << 8 | <rDMA
 	call hOamUpload
 
-	ld hl, hVblankCount
++:	ld hl, hVblankCount
 	inc (hl)
 	inc l ;LD HL, hFrameCount
 	inc (hl)

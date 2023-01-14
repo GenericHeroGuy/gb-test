@@ -22,17 +22,15 @@
 	rst $10
 .ENDM
 
-.MACRO SetBank ARGS Bank
-	ld a, Bank
+;set bank to A
+.MACRO SetBank
 	rst $18
 .ENDM
 
-;push current bank on stack, then set new bank
-.MACRO PushBank ARGS Bank
+;push current bank on stack
+.MACRO PushBank
 	ldh a, (<hCurBank)
 	push af
-	ld a, Bank
-	rst $18
 .ENDM
 
 ;restore pushed bank
@@ -41,6 +39,10 @@
 	rst $18
 .ENDM
 
-.MACRO CallHl
+.MACRO CallHL
 	rst $20
+.ENDM
+
+.MACRO CallDE
+	rst $28
 .ENDM

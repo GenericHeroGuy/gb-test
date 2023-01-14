@@ -2,6 +2,7 @@
 .INCLUDE "gameboy.inc"
 .INCLUDE "enums.inc"
 .INCLUDE "macros.inc"
+.INCLUDE "gbapu.inc"
 
 .BANK 0 SLOT 0
 .ORG 0
@@ -54,19 +55,50 @@ End:
 	ld a, IE.VBLANK
 	ldh (<rIE), a
 
-	ld a, Player.ID
-	ld bc, 0
-	ld de, 0
+InitActors:
+	ld a, $FF
+	ld (wActorSentinel), a
+	ld a, ACTOR_BANK
+	ld de, Init_Player
 	call AddActor
 
 Forever:
 	ld hl, wUploadData
 	inc (hl)
+
+	xor a
+	ldh (<hOamIndex), a
+	ldh (<hVblankSetting), a
 	call ReadInput
 	call ClearSprites
-	call Player
-	call WaitVblank
+	call RunActors
 
+	ld a, $01
+	ldh (<hVblankSetting), a
+
+	ld de, SgbMusicTest
+	ld bc, _sizeof_SgbMusicTest
+	ldh a, (<hPad1Pressed)
+	and PAD_START
+	call nz, SgbTransferMusic
+
+	ldh a, (<hPad1Pressed)
+	and PAD_SELECT
+	jr z, +
+	ld a, C1SWEEP.F0
+	ldh (<rC1SWEEP), a
+	ld a, C1DUTY.25 | 0
+	ldh (<rC1DUTY), a
+	ld a, C1VOL.15 | C1VOL.DOWN | C1VOL.F0
+	ldh (<rC1VOL), a
+	ld a, 0
+	ldh (<rC1FREQ), a
+	ld a, C1CTRL.RESTART | $40 | 0
+	ldh (<rC1CTRL), a
+	ld a, APUMIX.1L | APUMIX.1R
+	ldh (<rAPUMIX), a
+
++:	call WaitVblank
 	jr Forever
 
 WaitVblank:
